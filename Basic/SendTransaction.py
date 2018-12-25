@@ -17,6 +17,8 @@ def hash_block(block):
 
 def get_balance(participant):
     tx_sender = [[tx['amount'] for tx in block['transactions'] if tx['sender'] == participant] for block in blockchain]
+    open_tx_sender = [tx['amount'] for tx in open_transaction if tx['sender'] == participant]
+    tx_sender.append(open_tx_sender)
     amount_sent = 0
     for tx in tx_sender:
         if len(tx) > 0:
@@ -31,15 +33,23 @@ def get_balance(participant):
     return amount_receive - amount_sent
 
 
+def verify_transaction(transaction):
+    sender_balance = get_balance(transaction['sender'])
+    return sender_balance >= transaction['amount']
+
+
 def add_transaction(recipient, sender=owner, amount=1.0):
     transaction = {
         'sender': sender,
         'recipient': recipient,
         'amount': amount
     }
-    open_transaction.append(transaction)
-    participants.add(sender)
-    participants.add(recipient)
+    if verify_transaction(transaction):
+        open_transaction.append(transaction)
+        participants.add(sender)
+        participants.add(recipient)
+        return True
+    return False
 
 
 def mine_block():
@@ -107,7 +117,7 @@ while True:
     if user_choice == '1':
         tx_data = get_transaction_value()
         recipient, amount = tx_data
-        add_transaction(recipient, amount=amount)
+        print('Added transaction') if add_transaction(recipient, amount=amount) else print('Transacting failed')
         print(open_transaction)
     elif user_choice == '2':
         if mine_block():
@@ -133,6 +143,6 @@ while True:
         print_blockchain_element()
         break
 
-
+    print(get_balance('torik'))
 
 print('Done')
