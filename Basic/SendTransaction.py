@@ -18,14 +18,17 @@ def hash_block(block):
 
 
 def get_balance(participant):
-    tx_sender = [[tx['amount'] for tx in block['transactions'] if tx['sender'] == participant] for block in blockchain]
-    open_tx_sender = [tx['amount'] for tx in open_transaction if tx['sender'] == participant]
+    tx_sender = [[tx['amount'] for tx in block['transactions']
+                  if tx['sender'] == participant] for block in blockchain]
+    open_tx_sender = [tx['amount']
+                      for tx in open_transaction if tx['sender'] == participant]
     tx_sender.append(open_tx_sender)
-    amount_sent = functools.reduce(lambda tx_sum, tx_amt: tx_sum + tx_amt[0] if len(tx_amt) > 0 else 0, tx_sender, 0)
+    amount_sent = functools.reduce(
+        lambda tx_sum, tx_amt: tx_sum + sum(tx_amt) if len(tx_amt) > 0 else tx_sum+0, tx_sender, 0)
 
     tx_recipient = [[tx['amount'] for tx in block['transactions'] if tx['recipient'] == participant] for block in
                     blockchain]
-    amount_receive = functools.reduce(lambda tx_sum, tx_amt: tx_sum + tx_amt[0] if len(tx_amt) > 0 else 0, tx_recipient,
+    amount_receive = functools.reduce(lambda tx_sum, tx_amt: tx_sum + sum(tx_amt) if len(tx_amt) > 0 else tx_sum+0, tx_recipient,
                                       0)
     return amount_receive - amount_sent
 
@@ -52,7 +55,8 @@ def add_transaction(recipient, sender=owner, amount=1.0):
 def mine_block():
     last_block = blockchain[-1]
     hashed_block = hash_block(last_block)
-    reward_transaction = {'sender': 'MINING', 'recipient': owner, 'amount': MINING_REWARD}
+    reward_transaction = {'sender': 'MINING',
+                          'recipient': owner, 'amount': MINING_REWARD}
 
     copied_transaction = open_transaction[:]
     copied_transaction.append(reward_transaction)
@@ -122,7 +126,8 @@ while True:
     if user_choice == '1':
         tx_data = get_transaction_value()
         recipient, amount = tx_data
-        print('Added transaction') if add_transaction(recipient, amount=amount) else print('Transacting failed')
+        print('Added transaction') if add_transaction(
+            recipient, amount=amount) else print('Transacting failed')
         print(open_transaction)
     elif user_choice == '2':
         if mine_block():
