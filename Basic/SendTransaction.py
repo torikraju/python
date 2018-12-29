@@ -156,6 +156,6 @@ while True:
         print_blockchain_element()
         break
 
-    print(get_balance('torik'))
+    print('Balance of {} : {:.2f} '.format(owner, get_balance('torik')))
 
 print('Done')
