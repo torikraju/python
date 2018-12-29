@@ -3,23 +3,14 @@ import hashlib
 import json
 from collections import OrderedDict
 
-MINING_REWARD = 10
+from Hash_uitl import hash_block,hash_string_256
+from AppUitl import print_message,get_user_choice,genesis_block
 
-genesis_block = {
-    'previous_hash': '',
-    'index': 0,
-    'transactions': [],
-    'proof': 100
-}
+MINING_REWARD = 10
 blockchain = [genesis_block]
 open_transaction = []
 owner = 'torik'
 participants = {'torik'}
-
-
-def hash_block(block):
-    return hashlib.sha256(json.dumps(block, sort_keys=True).encode()).hexdigest()
-
 
 def get_balance(participant):
     tx_sender = [[tx['amount'] for tx in block['transactions']
@@ -43,11 +34,6 @@ def verify_transaction(transaction):
 
 
 def add_transaction(recipient, sender=owner, amount=1.0):
-    # transaction = {
-    #     'sender': sender,
-    #     'recipient': recipient,
-    #     'amount': amount
-    # }
     transaction = OrderedDict(
         [('sender', sender), ('recipient', recipient), ('amount', amount)])
 
@@ -62,8 +48,6 @@ def add_transaction(recipient, sender=owner, amount=1.0):
 def mine_block():
     last_block = blockchain[-1]
     hashed_block = hash_block(last_block)
-    # reward_transaction = {'sender': 'MINING',
-    #                       'recipient': owner, 'amount': MINING_REWARD}
     reward_transaction = OrderedDict(
         [('sender', 'MINING'), ('recipient', owner), ('amount', MINING_REWARD)])
     copied_transaction = open_transaction[:]
@@ -91,8 +75,6 @@ def get_transaction_value():
     return tx_recipient, tx_amount
 
 
-def get_user_choice():
-    return input("Your chaise ")
 
 
 def print_blockchain_element():
@@ -106,7 +88,7 @@ def print_blockchain_element():
 
 def valid_proof(transacitons, last_hash, proof):
     guess = (str(transacitons) + str(last_hash) + str(proof)).encode()
-    guess_hash = hashlib.sha256(guess).hexdigest()
+    guess_hash = hash_string_256(guess)
     print(guess_hash)
     return guess_hash[0:2] == '00'
 
@@ -136,16 +118,6 @@ def verify_chain():
 def verify_transactions():
     return all([verify_transaction(tx) for tx in open_transaction])
 
-
-def print_message():
-    print('Please choose')
-    print('1: Add a new transaction')
-    print('2: Mine a new block')
-    print('3: Output the blockchain blocks')
-    print('4: Output participants')
-    print('5: Check transaction validity')
-    print('h: Manipulate the chain')
-    print('q: Quit')
 
 
 while True:
