@@ -98,6 +98,21 @@ def print_blockchain_element():
         print('-' * 20)
 
 
+def valid_proof(transacitons, last_hash, proof):
+    guess = (str(transacitons) + str(last_hash) + str(proof)).encode()
+    guess_hash = hashlib.sha256(guess).hexdigest()
+    print(guess_hash)
+    return guess_hash[0:3] == '00'
+
+
+def proof_of_work():
+    last_block = blockchain[-1]
+    last_hash = hash_block(last_block)
+    proof = 0
+    while valid_proof(open_transaction, last_hash, proof):
+        proof += 1
+    return proof
+
 def verify_chain():
     for (index, block) in enumerate(blockchain):
         if index == 0:
