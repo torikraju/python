@@ -7,3 +7,5 @@ def multiply(el):
 
 # map is faster than list comprehension
 print(list(map(multiply, simple_list)))
+
+
