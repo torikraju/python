@@ -22,3 +22,8 @@ print(all(new_list))
 simple_list=[1,2,3,4,-5]
 print([el for el in simple_list if el > 0])
 print(all([el>0 for el in simple_list]))
+
+
+
+simple_list=[1,2,6]
+a,b,c = simple_list
