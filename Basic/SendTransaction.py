@@ -44,7 +44,7 @@ def add_transaction(recipient, sender=owner, amount=1.0):
         'recipient': recipient,
         'amount': amount
     }
-    if  verify_transaction(transaction):
+    if verify_transaction(transaction):
         open_transaction.append(transaction)
         participants.add(sender)
         participants.add(recipient)
@@ -56,10 +56,10 @@ def mine_block():
     last_block = blockchain[-1]
     hashed_block = hash_block(last_block)
     reward_transaction = {'sender': 'MINING', 'recipient': owner, 'amount': MINING_REWARD}
-    
+
     copied_transaction = open_transaction[:]
     copied_transaction.append(reward_transaction)
-    
+
     block = {
         'previous_hash': hashed_block,
         'index': len(blockchain),
@@ -106,6 +106,7 @@ def verify_chain():
 def verify_transactions():
     return all([verify_transaction(tx) for tx in open_transaction])
 
+
 def print_message():
     print('Please choose')
     print('1: Add a new transaction')
@@ -134,10 +135,10 @@ while True:
     elif user_choice == '4':
         print(participants)
     elif user_choice == '5':
-       if verify_transactions():
-           print('all transaciton are valid')
-       else:
-           print('Ther are invalid transacitons')
+        if verify_transactions():
+            print('all transaciton are valid')
+        else:
+            print('Ther are invalid transacitons')
     elif user_choice == 'h':
         if len(blockchain) >= 1:
             blockchain[0] = {
