@@ -3,14 +3,15 @@ import hashlib
 import json
 from collections import OrderedDict
 
-from Hash_uitl import hash_block,hash_string_256
-from AppUitl import print_message,get_user_choice,genesis_block
+from Hash_uitl import hash_block, hash_string_256
+from AppUitl import print_message, get_user_choice, genesis_block
 
 MINING_REWARD = 10
 blockchain = [genesis_block]
 open_transaction = []
 owner = 'torik'
 participants = {'torik'}
+
 
 def get_balance(participant):
     tx_sender = [[tx['amount'] for tx in block['transactions']
@@ -75,8 +76,6 @@ def get_transaction_value():
     return tx_recipient, tx_amount
 
 
-
-
 def print_blockchain_element():
     for idx, element in enumerate(blockchain):
         print('Outputting Block')
@@ -117,7 +116,6 @@ def verify_chain():
 
 def verify_transactions():
     return all([verify_transaction(tx) for tx in open_transaction])
-
 
 
 while True:
