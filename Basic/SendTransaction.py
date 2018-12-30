@@ -8,56 +8,69 @@ from Hash_uitl import hash_block, hash_string_256
 from AppUitl import print_message, get_user_choice, genesis_block
 
 MINING_REWARD = 10
-blockchain = [genesis_block]
+blockchain = []
 open_transactions = []
 owner = 'torik'
 participants = {'torik'}
 
 
 def load_data():
-    with open('blockchain.txt', mode='r') as f:
-        # file_content = pickle.loads(f.read())
-        file_content = f.readlines()
-        
-        global blockchain
-        global open_transactions
-        # blockchain = file_content['chain']
-        # open_transactions = file_content['ot']
-        # [:-1] is used for escaping the last line the \n
-        blockchain = json.loads(file_content[0][:-1])
-        updated_blockchain = []
-        for block in blockchain:
-            updated_block = {
-                'previous_hash': block['previous_hash'],
-                'index': block['index'],
-                'proof':  block['proof'],
-                'transactions': [OrderedDict(
-                    [('sender', tx['sender']), ('recipient', tx['recipient']), ('amount', tx['amount'])]) for tx in block['transactions']]
-            }
-            updated_blockchain.append(updated_block)
-        blockchain = updated_blockchain
-        open_transactions = json.loads(file_content[1])
-        updated_transactions = []
-        for tx in open_transactions:
-            updated_transaction=OrderedDict(
-                    [('sender', tx['sender']), ('recipient', tx['recipient']), ('amount', tx['amount'])])
-            updated_transactions.append(updated_transaction)
-        open_transactions = updated_transactions
+    global blockchain
+    global open_transactions
+    try:
+        with open('blockchain.txt', mode='r') as f:
+            # file_content = pickle.loads(f.read())
+            file_content = f.readlines()
+            # blockchain = file_content['chain']
+            # open_transactions = file_content['ot']
+            # [:-1] is used for escaping the last line the \n
+            blockchain = json.loads(file_content[0][:-1])
+            updated_blockchain = []
+            for block in blockchain:
+                updated_block = {
+                    'previous_hash': block['previous_hash'],
+                    'index': block['index'],
+                    'proof':  block['proof'],
+                    'transactions': [OrderedDict(
+                        [('sender', tx['sender']), ('recipient', tx['recipient']), ('amount', tx['amount'])]) for tx in block['transactions']]
+                }
+                updated_blockchain.append(updated_block)
+            blockchain = updated_blockchain
+            open_transactions = json.loads(file_content[1])
+            updated_transactions = []
+            for tx in open_transactions:
+                updated_transaction=OrderedDict(
+                        [('sender', tx['sender']), ('recipient', tx['recipient']), ('amount', tx['amount'])])
+                updated_transactions.append(updated_transaction)
+            open_transactions = updated_transactions
+    except IOError: 
+        blockchain = [genesis_block]
+        open_transactions = []
+    finally: 
+        print('Cleanup!')
+
 
 
 load_data()
 
 
 def save_data():
-    with open('blockchain.txt', mode='w') as f:
-        f.write(json.dumps(blockchain))
-        f.write('\n')
-        f.write(json.dumps(open_transactions))
-        # save_data = {
-        #     'chain': blockchain,
-        #     'ot':open_transactions
-        # }
-        # f.write(pickle.dumps(save_data))
+    global blockchain
+    global open_transactions
+    try:
+        with open('blockchain.txt', mode='w') as f:
+            f.write(json.dumps(blockchain))
+            f.write('\n')
+            f.write(json.dumps(open_transactions))
+            # save_data = {
+            #     'chain': blockchain,
+            #     'ot':open_transactions
+            # }
+            # f.write(pickle.dumps(save_data))
+    except IOError: 
+        print('Saving failed!')
+    finally: 
+        print('Cleanup!')
 
 
 def get_balance(participant):
@@ -136,7 +149,6 @@ def print_blockchain_element():
 def valid_proof(transacitons, last_hash, proof):
     guess = (str(transacitons) + str(last_hash) + str(proof)).encode()
     guess_hash = hash_string_256(guess)
-    print(guess_hash)
     return guess_hash[0:2] == '00'
 
 
@@ -175,7 +187,7 @@ while True:
         recipient, amount = tx_data
         print('Added transaction') if add_transaction(
             recipient, amount=amount) else print('Transacting failed')
-        print(open_transactions)
+        print('Open_Transactions: ',open_transactions)
     elif user_choice == '2':
         if mine_block():
             open_transactions = []
