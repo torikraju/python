@@ -8,7 +8,7 @@ from AppUitl import print_message, get_user_choice, genesis_block
 
 MINING_REWARD = 10
 blockchain = [genesis_block]
-open_transaction = []
+open_transactions = []
 owner = 'torik'
 participants = {'torik'}
 
@@ -17,25 +17,44 @@ def load_data():
     with open('blockchain.txt', mode='r') as f:
         file_content = f.readlines()
         global blockchain
-        global open_transaction
-        blockchain = file_content[0]
-        open_transaction = file_content[1]
+        global open_transactions
+        # [:-1] is used for escaping the last line the \n
+        blockchain = json.loads(file_content[0][:-1])
+        updated_blockchain = []
+        for block in blockchain:
+            updated_block = {
+                'previous_hash': block['previous_hash'],
+                'index': block['index'],
+                'proof':  block['proof'],
+                'transactions': [OrderedDict(
+                    [('sender', tx['sender']), ('recipient', tx['recipient']), ('amount', tx['amount'])]) for tx in block['transactions']]
+            }
+            updated_blockchain.append(updated_block)
+        blockchain = updated_blockchain
+        open_transactions = json.loads(file_content[1])
+        updated_transactions = []
+        for tx in open_transactions:
+            updated_transaction=OrderedDict(
+                    [('sender', tx['sender']), ('recipient', tx['recipient']), ('amount', tx['amount'])])
+            updated_transactions.append(updated_transaction)
+        open_transactions = updated_transactions
+
 
 load_data()
 
 
 def save_data():
     with open('blockchain.txt', mode='w') as f:
-        f.write(str(blockchain))
+        f.write(json.dumps(blockchain))
         f.write('\n')
-        f.write(str(open_transaction))
+        f.write(json.dumps(open_transactions))
 
 
 def get_balance(participant):
     tx_sender = [[tx['amount'] for tx in block['transactions']
                   if tx['sender'] == participant] for block in blockchain]
     open_tx_sender = [tx['amount']
-                      for tx in open_transaction if tx['sender'] == participant]
+                      for tx in open_transactions if tx['sender'] == participant]
     tx_sender.append(open_tx_sender)
     amount_sent = functools.reduce(
         lambda tx_sum, tx_amt: tx_sum + sum(tx_amt) if len(tx_amt) > 0 else tx_sum+0, tx_sender, 0)
@@ -57,10 +76,9 @@ def add_transaction(recipient, sender=owner, amount=1.0):
         [('sender', sender), ('recipient', recipient), ('amount', amount)])
 
     if verify_transaction(transaction):
-        open_transaction.append(transaction)
+        open_transactions.append(transaction)
         participants.add(sender)
         participants.add(recipient)
-        save_data()
         return True
     return False
 
@@ -70,7 +88,7 @@ def mine_block():
     hashed_block = hash_block(last_block)
     reward_transaction = OrderedDict(
         [('sender', 'MINING'), ('recipient', owner), ('amount', MINING_REWARD)])
-    copied_transaction = open_transaction[:]
+    copied_transaction = open_transactions[:]
     copied_transaction.append(reward_transaction)
     proof = proof_of_work()
     block = {
@@ -97,10 +115,10 @@ def get_transaction_value():
 
 
 def print_blockchain_element():
-    for idx, element in enumerate(blockchain):
+    for  element in enumerate(blockchain):
         print('Outputting Block')
         print(element)
-        print(idx)
+        print('-' * 20)
     else:
         print('-' * 20)
 
@@ -116,7 +134,7 @@ def proof_of_work():
     last_block = blockchain[-1]
     last_hash = hash_block(last_block)
     proof = 0
-    while not valid_proof(open_transaction, last_hash, proof):
+    while not valid_proof(open_transactions, last_hash, proof):
         proof += 1
     return proof
 
@@ -135,7 +153,7 @@ def verify_chain():
 
 
 def verify_transactions():
-    return all([verify_transaction(tx) for tx in open_transaction])
+    return all([verify_transaction(tx) for tx in open_transactions])
 
 
 while True:
@@ -147,10 +165,11 @@ while True:
         recipient, amount = tx_data
         print('Added transaction') if add_transaction(
             recipient, amount=amount) else print('Transacting failed')
-        print(open_transaction)
+        print(open_transactions)
     elif user_choice == '2':
         if mine_block():
-            open_transaction = []
+            open_transactions = []
+            save_data()
     elif user_choice == '3':
         print_blockchain_element()
     elif user_choice == '4':
