@@ -1,6 +1,7 @@
 """Provides verification helper methods."""
 
 from Utility.HashUtil import hash_block, hash_string_256
+from Wallet import Wallet
 
 
 class Verification:
@@ -21,10 +22,10 @@ class Verification:
     @classmethod
     def verify_transactions(cls, open_transactions, get_balance):
         """Verifies all open transactions."""
-        return all([cls.verify_transaction(tx, get_balance) for tx in open_transactions])
+        return all([cls.verify_transaction(tx, get_balance, False) for tx in open_transactions])
 
     @staticmethod
-    def verify_transaction(transaction, get_balance):
+    def verify_transaction(transaction, get_balance, check_funds=True):
         """Verify a transaction by checking weather the sender has sufficient balance.
 
             Arguments:
@@ -32,8 +33,11 @@ class Verification:
                 :get_balance: Then function fro get balance
 
         """
-        sender_balance = get_balance()
-        return sender_balance >= transaction.amount
+        if check_funds:
+            sender_balance = get_balance()
+            return sender_balance >= transaction.amount and Wallet.verify_transaction(transaction)
+        else:
+            return Wallet.verify_transaction(transaction)
 
     @staticmethod
     def valid_proof(transactions, last_hash, proof):

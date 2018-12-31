@@ -53,8 +53,7 @@ class Wallet:
         Arguments:
             :transaction: The transaction that should be verified.
         """
-        if transaction.sender == 'MINING':
-            return True
+
         public_key = RSA.importKey(binascii.unhexlify(transaction.sender))
         verifier = PKCS1_v1_5.new(public_key)
         h = SHA256.new((str(transaction.sender) + str(transaction.recipient) + str(transaction.amount)).encode('utf8'))
