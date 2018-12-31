@@ -1,4 +1,4 @@
-from HashUtil import hash_block, hash_string_256
+from Utility.HashUtil import hash_block, hash_string_256
 
 
 class Verification:

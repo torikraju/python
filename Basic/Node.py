@@ -1,8 +1,6 @@
-from uuid import uuid4
-
 from AppUitl import print_message, get_user_choice
 from Blockchain import Blockchain
-from Verification import Verification
+from Utility.Verification import Verification
 
 
 class Node:
