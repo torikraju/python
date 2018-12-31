@@ -5,6 +5,7 @@ from Utility.HashUtil import hash_block
 from Block import Block
 from Transaction import Transaction
 from Utility.Verification import Verification
+from Wallet import Wallet
 
 MINING_REWARD = 10
 
@@ -114,6 +115,8 @@ class Blockchain:
         if self.hosting_node is None:
             return False
         transaction = Transaction(sender, receiver, signature, amt)
+        if not Wallet.verify_transaction(transaction):
+            return False
         if Verification.verify_transaction(transaction, self.get_balance):
             self.__open_transactions.append(transaction)
             self.save_data()
@@ -130,6 +133,9 @@ class Blockchain:
         copied_transaction.append(reward_transaction)
         proof = self.proof_of_work()
         block = Block(len(self.chain), hashed_block, copied_transaction, proof)
+        for tx in block.transactions:
+            if not Wallet.verify_transaction(tx):
+                return False
         self.__chain.append(block)
         self.__open_transactions = []
         self.save_data()
