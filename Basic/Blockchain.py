@@ -5,6 +5,7 @@ from collections import OrderedDict
 from HashUtil import hash_block, hash_string_256
 from AppUitl import print_message, get_user_choice, genesis_block
 from Block import Block
+from Transaction import Transaction
 
 MINING_REWARD = 10
 blockchain = []
@@ -26,9 +27,8 @@ def load_data():
             blockchain = json.loads(file_content[0][:-1])
             updated_blockchain = []
             for block in blockchain:
-                converted_tx = [OrderedDict(
-                    [('sender', tx['sender']), ('recipient', tx['recipient']), ('amount', tx['amount'])]) for tx in
-                    block['transactions']]
+                converted_tx = [Transaction(tx['sender'], tx['recipient'], tx['amount']) for tx in
+                                block['transactions']]
                 updated_block = Block(block['index'], block['previous_hash'], converted_tx, block['proof'],
                                       block['timestamp'])
                 updated_blockchain.append(updated_block)
@@ -36,8 +36,7 @@ def load_data():
             open_transactions = json.loads(file_content[1])
             updated_transactions = []
             for tx in open_transactions:
-                updated_transaction = OrderedDict(
-                    [('sender', tx['sender']), ('recipient', tx['recipient']), ('amount', tx['amount'])])
+                updated_transaction = Transaction(tx['sender'], tx['recipient'], tx['amount'])
                 updated_transactions.append(updated_transaction)
             open_transactions = updated_transactions
     except (IOError, IndexError):
@@ -55,10 +54,14 @@ def save_data():
     global open_transactions
     try:
         with open('blockchain.txt', mode='w') as f:
-            savable_chain = [block.__dict__ for block in blockchain]
+            savable_chain = [block.__dict__ for block in
+                             [Block(block_el.index, block_el.previous_hash,
+                                    [tx.__dict__ for tx in block_el.transactions], block_el.proof, block_el.timestamp)
+                              for block_el in blockchain]]
             f.write(json.dumps(savable_chain))
             f.write('\n')
-            f.write(json.dumps(open_transactions))
+            savable_tx = [tx.__dict__ for tx in open_transactions]
+            f.write(json.dumps(savable_tx))
             # save_data = {
             #     'chain': blockchain,
             #     'ot':open_transactions
@@ -71,16 +74,13 @@ def save_data():
 
 
 def get_balance(participant):
-    tx_sender = [[tx['amount'] for tx in block.transactions
-                  if tx['sender'] == participant] for block in blockchain]
-    open_tx_sender = [tx['amount']
-                      for tx in open_transactions if tx['sender'] == participant]
+    tx_sender = [[tx.amount for tx in block.transactions if tx.sender == participant] for block in blockchain]
+    open_tx_sender = [tx.amount for tx in open_transactions if tx.sender == participant]
     tx_sender.append(open_tx_sender)
     amount_sent = functools.reduce(
         lambda tx_sum, tx_amt: tx_sum + sum(tx_amt) if len(tx_amt) > 0 else tx_sum + 0, tx_sender, 0)
 
-    tx_recipient = [[tx['amount'] for tx in block.transactions if tx['recipient'] == participant] for block in
-                    blockchain]
+    tx_recipient = [[tx.amount for tx in block.transactions if tx.recipient == participant] for block in blockchain]
     amount_receive = functools.reduce(lambda tx_sum, tx_amt: tx_sum + sum(tx_amt) if len(tx_amt) > 0 else tx_sum + 0,
                                       tx_recipient,
                                       0)
@@ -88,18 +88,15 @@ def get_balance(participant):
 
 
 def verify_transaction(transaction):
-    sender_balance = get_balance(transaction['sender'])
-    return sender_balance >= transaction['amount']
+    sender_balance = get_balance(transaction.sender)
+    return sender_balance >= transaction.amount
 
 
-def add_transaction(recipient, sender=owner, amount=1.0):
-    transaction = OrderedDict(
-        [('sender', sender), ('recipient', recipient), ('amount', amount)])
-
+def add_transaction(receiver, sender=owner, amt=1.0):
+    transaction = Transaction(sender, receiver, amt)
     if verify_transaction(transaction):
         open_transactions.append(transaction)
-        participants.add(sender)
-        participants.add(recipient)
+        save_data()
         return True
     return False
 
@@ -107,8 +104,7 @@ def add_transaction(recipient, sender=owner, amount=1.0):
 def mine_block():
     last_block = blockchain[-1]
     hashed_block = hash_block(last_block)
-    reward_transaction = OrderedDict(
-        [('sender', 'MINING'), ('recipient', owner), ('amount', MINING_REWARD)])
+    reward_transaction = Transaction('MINING', owner, MINING_REWARD)
     copied_transaction = open_transactions[:]
     copied_transaction.append(reward_transaction)
     proof = proof_of_work()
@@ -140,7 +136,7 @@ def print_blockchain_element():
 
 
 def valid_proof(transactions, last_hash, proof):
-    guess = (str(transactions) + str(last_hash) + str(proof)).encode()
+    guess = (str(tx.to_order_dict() for tx in transactions) + str(last_hash) + str(proof)).encode()
     guess_hash = hash_string_256(guess)
     return guess_hash[0:2] == '00'
 
@@ -179,7 +175,7 @@ while True:
         tx_data = get_transaction_value()
         recipient, amount = tx_data
         print('Added transaction') if add_transaction(
-            recipient, amount=amount) else print('Transacting failed')
+            recipient, amt=amount) else print('Transacting failed')
         print('Open_Transactions: ', open_transactions)
     elif user_choice == '2':
         if mine_block():
