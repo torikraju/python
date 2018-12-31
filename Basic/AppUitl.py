@@ -1,9 +1,6 @@
-genesis_block = {
-    'previous_hash': '',
-    'index': 0,
-    'transactions': [],
-    'proof': 100
-}
+from Block import Block
+
+genesis_block = Block(0, '', [], 100, 0)
 
 
 def print_message():
@@ -13,8 +10,8 @@ def print_message():
     print('3: Output the blockchain blocks')
     print('4: Output participants')
     print('5: Check transaction validity')
-    print('h: Manipulate the chain')
     print('q: Quit')
+
 
 def get_user_choice():
     return input("Your chaise ")
