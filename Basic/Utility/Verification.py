@@ -1,3 +1,5 @@
+"""Provides verification helper methods."""
+
 from Utility.HashUtil import hash_block, hash_string_256
 
 
