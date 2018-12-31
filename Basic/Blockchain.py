@@ -1,6 +1,5 @@
 import functools
 import json
-from collections import OrderedDict
 
 from HashUtil import hash_block, hash_string_256
 from AppUitl import print_message, get_user_choice, genesis_block
@@ -11,7 +10,6 @@ MINING_REWARD = 10
 blockchain = []
 open_transactions = []
 owner = 'torik'
-participants = {'torik'}
 
 
 def load_data():
@@ -184,8 +182,6 @@ while True:
     elif user_choice == '3':
         print_blockchain_element()
     elif user_choice == '4':
-        print(participants)
-    elif user_choice == '5':
         if verify_transactions():
             print('all transactions are valid')
         else:

@@ -8,8 +8,7 @@ def print_message():
     print('1: Add a new transaction')
     print('2: Mine a new block')
     print('3: Output the blockchain blocks')
-    print('4: Output participants')
-    print('5: Check transaction validity')
+    print('4: Check transaction validity')
     print('q: Quit')
 
 
