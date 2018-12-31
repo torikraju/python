@@ -11,6 +11,7 @@ def print_message():
     print('4: Check transaction validity')
     print('5: Create wallet')
     print('6: Load wallet')
+    print('7: Save keys')
     print('q: Quit')
 
 
