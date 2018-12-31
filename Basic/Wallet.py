@@ -1,4 +1,6 @@
 from Crypto.PublicKey import RSA
+from Crypto.Signature import PKCS1_v1_5
+from Crypto.Hash import SHA256
 import Crypto.Random
 import binascii
 
@@ -27,10 +29,8 @@ class Wallet:
         try:
             with open('wallet.txt', mode='r') as f:
                 keys = f.readlines()
-                public_key = keys[0][:-1]
-                private_key = keys[1]
-                self.public_key = public_key
-                self.private_key = private_key
+                self.public_key = keys[0][:-1]
+                self.private_key = keys[1]
         except (IOError, IndexError):
             print('Loading wallet failed...')
 
@@ -39,3 +39,9 @@ class Wallet:
         public_key = private_key.publickey()
         return binascii.hexlify(private_key.exportKey(format="DER")).decode(), binascii.hexlify(
             public_key.exportKey(format="DER")).decode()
+
+    def sign_transaction(self, sender, recipient, amount):
+        signer = PKCS1_v1_5.new(RSA.importKey(binascii.unhexlify(self.private_key)))
+        h = SHA256.new((str(sender) + str(recipient) + str(amount)).encode('utf8'))
+        signature = signer.sign(h)
+        return binascii.hexlify(signature).decode('ascii')

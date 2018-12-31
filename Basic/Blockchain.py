@@ -42,7 +42,7 @@ class Blockchain:
                 blockchain = json.loads(file_content[0][:-1])
                 updated_blockchain = []
                 for block in blockchain:
-                    converted_tx = [Transaction(tx['sender'], tx['recipient'], tx['amount']) for tx in
+                    converted_tx = [Transaction(tx['sender'], tx['recipient'], tx['signature'], tx['amount']) for tx in
                                     block['transactions']]
                     updated_block = Block(block['index'], block['previous_hash'], converted_tx, block['proof'],
                                           block['timestamp'])
@@ -51,7 +51,7 @@ class Blockchain:
                 open_transactions = json.loads(file_content[1])
                 updated_transactions = []
                 for tx in open_transactions:
-                    updated_transaction = Transaction(tx['sender'], tx['recipient'], tx['amount'])
+                    updated_transaction = Transaction(tx['sender'], tx['recipient'], tx['signature'], tx['amount'])
                     updated_transactions.append(updated_transaction)
                 self.__open_transactions = updated_transactions
         except (IOError, IndexError):
@@ -110,10 +110,10 @@ class Blockchain:
             return None
         return self.chain[-1]
 
-    def add_transaction(self, receiver, sender, amt=1.0):
-        if self.hosting_node == None:
+    def add_transaction(self, receiver, sender, signature, amt=1.0):
+        if self.hosting_node is None:
             return False
-        transaction = Transaction(sender, receiver, amt)
+        transaction = Transaction(sender, receiver, signature, amt)
         if Verification.verify_transaction(transaction, self.get_balance):
             self.__open_transactions.append(transaction)
             self.save_data()
@@ -121,11 +121,11 @@ class Blockchain:
         return False
 
     def mine_block(self):
-        if self.hosting_node == None:
+        if self.hosting_node is None:
             return False
         last_block = self.__chain[-1]
         hashed_block = hash_block(last_block)
-        reward_transaction = Transaction('MINING', self.hosting_node, MINING_REWARD)
+        reward_transaction = Transaction('MINING', self.hosting_node, '', MINING_REWARD)
         copied_transaction = self.__open_transactions[:]
         copied_transaction.append(reward_transaction)
         proof = self.proof_of_work()
