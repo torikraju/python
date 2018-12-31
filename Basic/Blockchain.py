@@ -119,14 +119,14 @@ class Blockchain:
         return False
 
     def mine_block(self):
-        last_block = self.chain[-1]
+        last_block = self.__chain[-1]
         hashed_block = hash_block(last_block)
         reward_transaction = Transaction('MINING', self.hosting_node, MINING_REWARD)
         copied_transaction = self.__open_transactions[:]
         copied_transaction.append(reward_transaction)
         proof = self.proof_of_work()
         block = Block(len(self.chain), hashed_block, copied_transaction, proof)
-        self.chain.append(block)
+        self.__chain.append(block)
         self.__open_transactions = []
         self.save_data()
         return True

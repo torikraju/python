@@ -1,14 +1,15 @@
 from AppUitl import print_message, get_user_choice
 from Blockchain import Blockchain
 from Utility.Verification import Verification
+from Wallet import Wallet
 
 
 class Node:
 
     def __init__(self):
         # self.id = str(uuid4())
-        self.id = 'torik'
-        self.blockchain = Blockchain(self.id)
+        self.wallet = Wallet()
+        self.blockchain = Blockchain(self.wallet.public_key)
 
     def get_transaction_value(self):
         """ Returns the input of the user (a new transaction amount) as a float. """
@@ -32,7 +33,7 @@ class Node:
             if user_choice == '1':
                 tx_data = self.get_transaction_value()
                 recipient, amount = tx_data
-                print('Added transaction') if self.blockchain.add_transaction(recipient, self.id,
+                print('Added transaction') if self.blockchain.add_transaction(recipient, self.wallet.public_key,
                                                                               amt=amount) else print(
                     'Transacting failed')
                 print('Open_Transactions: ', self.blockchain.get_open_transactions())
@@ -46,6 +47,10 @@ class Node:
                     print('all transactions are valid')
                 else:
                     print('There are invalid transactions')
+            elif user_choice == '5':
+                self.wallet.create_keys()
+            elif user_choice == '6':
+                pass
             elif user_choice == 'q':
                 break
             else:
@@ -55,13 +60,10 @@ class Node:
                 print('Invalid blockchain')
                 break
 
-            print('Balance of {} : {:.2f} '.format(self.id, self.blockchain.get_balance()))
+            print('Balance of {} : {:.2f} '.format(self.wallet.public_key, self.blockchain.get_balance()))
 
         print('Done')
 
 
-if __name__ == '__main__':
-    node = Node()
-    node.listen_for_input()
-
-print(__name__)
+node = Node()
+node.listen_for_input()
