@@ -26,7 +26,7 @@ class Verification:
                 :transacton: The transaction that should be valid
 
         """
-        sender_balance = get_balance(transaction.sender)
+        sender_balance = get_balance()
         return sender_balance >= transaction.amount
 
     def valid_proof(self, transactions, last_hash, proof):
