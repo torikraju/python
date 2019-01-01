@@ -123,7 +123,7 @@ class Blockchain:
 
     def mine_block(self):
         if self.hosting_node is None:
-            return False
+            return None
         last_block = self.__chain[-1]
         hashed_block = hash_block(last_block)
         reward_transaction = Transaction('MINING', self.hosting_node, '', MINING_REWARD)
@@ -137,4 +137,4 @@ class Blockchain:
         self.__chain.append(block)
         self.__open_transactions = []
         self.save_data()
-        return True
+        return block
