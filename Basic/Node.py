@@ -1,6 +1,5 @@
 from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
-import pymysql
 
 from Wallet import Wallet
 from Blockchain import Blockchain
@@ -74,12 +73,7 @@ def get_balance():
 def get_open_transaction():
     transactions = blockchain.get_open_transactions()
     dict_transactions = [tx.__dict__ for tx in transactions]
-    response = {
-        'message': 'Fetched transaction successfully.',
-        'transactions': dict_transactions
-    }
-
-    return jsonify(response), 200
+    return jsonify(dict_transactions), 200
 
 
 @app.route('/chain', methods=['GET'])
